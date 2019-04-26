@@ -1,0 +1,25 @@
+.progress-bar {
+    background-color: whitesmoke;
+    position: relative;
+    width: 200px;
+    height: 25px;
+}
+
+.progress-bar-inner {
+    position: absolute;
+    background-color: gray;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 100%;
+}
+
+.progress-bar-field {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.progress-bar-text {
+    margin-left: 10px;
+}
