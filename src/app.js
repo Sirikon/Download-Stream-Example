@@ -1,13 +1,5 @@
 const express = require('express');
 
-function jsonGenerator(req, res) {
-  res.writeHead(200, {
-    'Content-Type': 'application/json'
-  });
-  res.write(JSON.stringify({ message: 'ok!' }));
-  res.end();
-}
-
 function csvGenerator(req, res) {
   const lines = 75000;
 
@@ -33,7 +25,6 @@ module.exports = () => {
   
   app.use(express.static('./src/public'));
 
-  app.get('/json-generator', jsonGenerator)
   app.get('/csv-generator', csvGenerator)
   
   app.listen(3000, function () {
