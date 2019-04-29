@@ -5,6 +5,11 @@ const state = {
     expectedLines: 0,
     data: [],
     rest: [],
+    timers: {
+        start: 0,
+        download: 0,
+        end: 0
+    },
     getProgress() {
         return state.data.length / state.expectedLines;
     }
@@ -24,14 +29,24 @@ function render() {
     domElements.lines.textContent = state.data.length;
 }
 
+setInterval(() => {
+    render();
+}, 1000);
+
 function download() {
+    console.log('Start');
+    state.timers.start = performance.now();
     return fetch('/csv-generator')
         .then(response => {
+            state.timers.download = performance.now();
             readExpectedLinesHeader(response);
             return readBody(response.body);
         })
         .then(() => {
+            state.timers.end = performance.now();
             console.log('Done!')
+            console.log('Time to headers:', state.timers.download - state.timers.start);
+            console.log('From headers to full read:', state.timers.end - state.timers.download);
         });
 }
 
@@ -48,7 +63,7 @@ function readBody(body) {
             if (done) return;
             state.chunkCount++;
             processChunk(value);
-            render();
+            // render();
             return reader.read().then(processData);
         });
 }
@@ -82,6 +97,6 @@ function prependRestToChunk(value) {
 }
 
 function parseCSVLine(line) {
-    var cols = line.split(';');
+    const cols = line.split(';');
     return cols.map(c => c.substr(1, c.length - 2));
 }
