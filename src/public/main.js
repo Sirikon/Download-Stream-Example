@@ -33,14 +33,22 @@ setInterval(() => {
     render();
 }, 1000);
 
-function download() {
+function downloadCSV() {
+    download('/csv-generator', parseCSVLine)
+}
+
+function downloadJSON() {
+    download('/json-generator', JSON.parse)
+}
+
+function download(url, itemParser) {
     console.log('Start');
     state.timers.start = performance.now();
-    return fetch('/csv-generator')
+    return fetch(url)
         .then(response => {
             state.timers.download = performance.now();
             readExpectedLinesHeader(response);
-            return readBody(response.body);
+            return readBody(response.body, itemParser);
         })
         .then(() => {
             state.timers.end = performance.now();
@@ -56,19 +64,19 @@ function readExpectedLinesHeader(response) {
     state.expectedLines = parseInt(value);
 }
 
-function readBody(body) {
+function readBody(body, itemParser) {
     const reader = body.getReader();
     return reader.read()
         .then(function processData({ done, value }) {
             if (done) return;
             state.chunkCount++;
-            processChunk(value);
+            processChunk(value, itemParser);
             // render();
             return reader.read().then(processData);
         });
 }
 
-function processChunk(value) {
+function processChunk(value, itemParser) {
     const chunk = prependRestToChunk(value);
     let item = [];
     for(var i = 0; i < chunk.length; i++) {
@@ -77,7 +85,7 @@ function processChunk(value) {
         var charCode = chunk[i];
         if (charCode === NEWLINE_CHARCODE) {
             const rawLine = item.map(c => String.fromCharCode(c)).join('');
-            const line = parseCSVLine(rawLine);
+            const line = itemParser(rawLine);
             state.data.push(line);
             item = [];
         } else {
